@@ -1,12 +1,25 @@
 from urllib.request import urlopen
 from urllib.error import HTTPError
 from bs4 import BeautifulSoup
+import datetime
+import random
 import re
-try:
-    html=urlopen('https://en.wikipedia.org/wiki/Kevin_Bacon');
-    bs=BeautifulSoup(html, 'html.parser')
-except HTTPError as e:
-    print(e)
-for links in bs.find('div',{'id':'bodyContent'}).find_all('a',href=re.compile('^(\/wiki\/)((?!:).)*$')):
-    if 'href' in links.attrs:
-        print(links['href'])
+
+random.seed(datetime.datetime.now())
+
+def getLinks(articleUrl):
+    try:
+        html=urlopen('https://en.wikipedia.org{}'.format(articleUrl));
+        bs=BeautifulSoup(html, 'html.parser')
+    except HTTPError as e:
+        print(e)
+    try:
+        return bs.find('div',{'id':'bodyContent'}).find_all('a',href=re.compile('^(\/wiki\/)((?!:).)*$'))
+    except AttributeError as e:
+        print(e)
+    
+links=getLinks('/wiki/Kevin_Bacon')
+while len(links)>0:
+    newArticle=links[random.randint(0,len(links)-1)].attrs['href']
+    print(newArticle)
+    links=getLinks(newArticle)
